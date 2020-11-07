@@ -1,6 +1,8 @@
 package com.michaelmagdy.photoweatherapp.model.webservice;
 
-public class WeatherPojo {
+import java.io.Serializable;
+
+public class WeatherPojo implements Serializable {
 
     String cityName;
     String temp;
