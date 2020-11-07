@@ -3,6 +3,7 @@ package com.michaelmagdy.photoweatherapp.view;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.palette.graphics.Palette;
 
 import android.content.Intent;
@@ -21,8 +22,12 @@ import com.facebook.share.model.SharePhoto;
 import com.facebook.share.model.SharePhotoContent;
 import com.facebook.share.widget.ShareButton;
 import com.michaelmagdy.photoweatherapp.R;
+import com.michaelmagdy.photoweatherapp.model.localdatabase.Picture;
 import com.michaelmagdy.photoweatherapp.model.webservice.WeatherPojo;
+import com.michaelmagdy.photoweatherapp.viewmodel.ImageFullScreenActivityViewModel;
+import com.michaelmagdy.photoweatherapp.viewmodel.MainActivityViewModel;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -44,6 +49,8 @@ public class ImageFullScreenActivity extends AppCompatActivity {
     private ShareButton photoShareBtn;
     private CallbackManager callbackManager;
 
+    private ImageFullScreenActivityViewModel viewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +59,8 @@ public class ImageFullScreenActivity extends AppCompatActivity {
         imageView = findViewById(R.id.image_full_screen);
         photoShareBtn = findViewById(R.id.sb_photo);
         callbackManager = CallbackManager.Factory.create();
+
+        viewModel = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(ImageFullScreenActivityViewModel.class);
 
         Intent intent = getIntent();
         if (intent.hasExtra(INTENT_WEATHER)){
@@ -130,6 +139,12 @@ public class ImageFullScreenActivity extends AppCompatActivity {
                 imageView.setImageBitmap(bitmap);
             }
         }
+
+
+        if (bitmap != null){
+            com.michaelmagdy.photoweatherapp.model.localdatabase.Picture picture = new Picture(convertBitmapToByte(bitmap));
+            viewModel.insert(picture);
+        }
     }
 
 
@@ -176,6 +191,15 @@ public class ImageFullScreenActivity extends AppCompatActivity {
                 Math.max(r, 0),
                 Math.max(g, 0),
                 Math.max(b, 0));
+    }
+
+    //convert bitmap to byte[] to save it in database
+    private byte[] convertBitmapToByte(Bitmap bitmap) {
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        byte[] byteArray = stream.toByteArray();
+        return byteArray;
     }
 
 }

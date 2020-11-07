@@ -6,6 +6,8 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.app.Activity;
@@ -30,6 +32,7 @@ import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.karumi.dexter.listener.single.PermissionListener;
 import com.michaelmagdy.photoweatherapp.R;
+import com.michaelmagdy.photoweatherapp.model.localdatabase.Picture;
 import com.michaelmagdy.photoweatherapp.model.webservice.WeatherPojo;
 import com.michaelmagdy.photoweatherapp.viewmodel.MainActivityViewModel;
 
@@ -44,6 +47,9 @@ public class MainActivity extends AppCompatActivity {
     FloatingActionButton mAddFab, mCameraFab, mGalleryFab;
     TextView cameraText, galleryText;
     Boolean isAllFabsVisible;
+
+    private RecyclerView recyclerView;
+    private PictureListAdapter adapter;
 
     private WeatherPojo currentWeatherPojo;
     public static final String INTENT_TYPE = "type";
@@ -60,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         printKeyHash(MainActivity.this);
         printHashKey();
 
-        TextView textView = findViewById(R.id.textV);
+        recyclerView = findViewById(R.id.picture_history_list);
 
         //mainActivityViewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
         mainActivityViewModel = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(this.getApplication())).get(MainActivityViewModel.class);
@@ -70,9 +76,6 @@ public class MainActivity extends AppCompatActivity {
         weatherPojoLiveData.observe(MainActivity.this, new Observer<WeatherPojo>() {
             @Override
             public void onChanged(WeatherPojo weatherPojo) {
-                textView.setText(weatherPojo.getCityName() + "\n" +
-                        weatherPojo.getTemp() + "\n" +
-                        weatherPojo.getDescription());
 
                 currentWeatherPojo = weatherPojo;
 
@@ -81,6 +84,18 @@ public class MainActivity extends AppCompatActivity {
             }
         } );
 
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setHasFixedSize(true);
+        adapter = new PictureListAdapter();
+        recyclerView.setAdapter(adapter);
+
+        mainActivityViewModel.getAllPictures().observe(MainActivity.this, new Observer<List<Picture>>() {
+            @Override
+            public void onChanged(List<Picture> pictures) {
+
+                adapter.submitList(pictures);
+            }
+        });
 
         mAddFab = findViewById(R.id.add_fab);
         mCameraFab = findViewById(R.id.camera_fab);
