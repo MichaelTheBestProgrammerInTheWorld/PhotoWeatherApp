@@ -16,6 +16,10 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.widget.ImageView;
 
+import com.facebook.CallbackManager;
+import com.facebook.share.model.SharePhoto;
+import com.facebook.share.model.SharePhotoContent;
+import com.facebook.share.widget.ShareButton;
 import com.michaelmagdy.photoweatherapp.R;
 import com.michaelmagdy.photoweatherapp.model.webservice.WeatherPojo;
 
@@ -35,6 +39,10 @@ public class ImageFullScreenActivity extends AppCompatActivity {
     public static final int GALLERY_REQ_CODE = 10;
     private Uri imgUri;
     private ImageView imageView;
+    private Bitmap bitmap;
+
+    private ShareButton photoShareBtn;
+    private CallbackManager callbackManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +50,8 @@ public class ImageFullScreenActivity extends AppCompatActivity {
         setContentView(R.layout.activity_image_full_screen);
 
         imageView = findViewById(R.id.image_full_screen);
+        photoShareBtn = findViewById(R.id.sb_photo);
+        callbackManager = CallbackManager.Factory.create();
 
         Intent intent = getIntent();
         if (intent.hasExtra(INTENT_WEATHER)){
@@ -97,13 +107,27 @@ public class ImageFullScreenActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        callbackManager.onActivityResult(requestCode, resultCode, data);
+
+        SharePhoto sharePhoto = new SharePhoto.Builder()
+                .setBitmap(bitmap)
+                .build();
+
+        SharePhotoContent sharePhotoContent = new SharePhotoContent.Builder()
+                .addPhoto(sharePhoto)
+                .build();
+
+        photoShareBtn.setShareContent(sharePhotoContent);
+
         if (resultCode == RESULT_OK) {
             if (requestCode == GALLERY_REQ_CODE){
                 imgUri = data.getData();
-                imageView.setImageBitmap(editImage(imgUri));
+                bitmap = editImage(imgUri);
+                imageView.setImageBitmap(bitmap);
             } else if (requestCode == CAMERA_REQ_CODE){
 
-                imageView.setImageBitmap(editImage(imgUri));
+                bitmap = editImage(imgUri);
+                imageView.setImageBitmap(bitmap);
             }
         }
     }

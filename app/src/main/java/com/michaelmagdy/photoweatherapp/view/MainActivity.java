@@ -8,9 +8,13 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -29,6 +33,8 @@ import com.michaelmagdy.photoweatherapp.R;
 import com.michaelmagdy.photoweatherapp.model.webservice.WeatherPojo;
 import com.michaelmagdy.photoweatherapp.viewmodel.MainActivityViewModel;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -51,6 +57,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         addAppPermissions();
+        printKeyHash(MainActivity.this);
+        printHashKey();
 
         TextView textView = findViewById(R.id.textV);
 
@@ -178,5 +186,57 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(INTENT_WEATHER, currentWeatherPojo);
         intent.putExtra(INTENT_TYPE, type);
         startActivity(intent);
+    }
+
+
+
+    public static String printKeyHash(Activity context) {
+        PackageInfo packageInfo;
+        String key = null;
+        try {
+            //getting application package name, as defined in manifest
+            String packageName = context.getApplicationContext().getPackageName();
+
+            //Retriving package info
+            packageInfo = context.getPackageManager().getPackageInfo(packageName,
+                    PackageManager.GET_SIGNATURES);
+
+            Log.e("Package Name=", context.getApplicationContext().getPackageName());
+
+            for (Signature signature : packageInfo.signatures) {
+                MessageDigest md = MessageDigest.getInstance("SHA");
+                md.update(signature.toByteArray());
+                key = new String(Base64.encode(md.digest(), 0));
+
+                // String key = new String(Base64.encodeBytes(md.digest()));
+                Log.e("a7aB2a", key);
+            }
+        } catch (PackageManager.NameNotFoundException e1) {
+            Log.e("Name not found", e1.toString());
+        }
+        catch (NoSuchAlgorithmException e) {
+            Log.e("No such an algorithm", e.toString());
+        } catch (Exception e) {
+            Log.e("Exception", e.toString());
+        }
+
+        return key;
+    }
+
+
+    public void printHashKey() {
+        try {
+            PackageInfo info = getPackageManager().getPackageInfo(
+                    "com.michaelmagdy.photoweatherapp",
+                    PackageManager.GET_SIGNATURES);
+
+            for (Signature signature : info.signatures) {
+                MessageDigest md = MessageDigest.getInstance("SHA");
+                md.update(signature.toByteArray());
+                Log.d("a7aB2a:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+        } catch (NoSuchAlgorithmException e) {
+        }
     }
 }

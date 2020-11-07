@@ -7,6 +7,17 @@
     android:orientation="vertical"
     tools:context=".view.ImageFullScreenActivity">
 
+    <com.facebook.login.widget.LoginButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/lb"/>
+
+    <com.facebook.share.widget.ShareButton
+        android:id="@+id/sb_photo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Share Photo" />
+
     <ImageView
         android:id="@+id/image_full_screen"
         android:layout_width="match_parent"
